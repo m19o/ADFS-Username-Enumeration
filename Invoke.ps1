@@ -5,7 +5,7 @@ Scans the top 1000 most common TCP ports for all live hosts in a CIDR subnet.
 .PARAMETER Subnet
 A subnet in CIDR notation, e.g. 192.168.1.0/24
 
-.PARAMETER OutputFile
+.PARAMETER OutputFile 
 Optional. Path to save the results as CSV.
 
 .EXAMPLE
@@ -48,12 +48,12 @@ function Invoke-Top1000PortScan {
 
     # Ping each host to see if it is alive
     $liveHosts = @()
-    foreach ($host in $allHosts) {
-        if (Test-Connection -ComputerName $host -Count 1 -Quiet -ErrorAction SilentlyContinue) {
-            Write-Host "$host is alive" -ForegroundColor Green
-            $liveHosts += $host
+    foreach ($targetHost in $allHosts) {
+        if (Test-Connection -ComputerName $targetHost -Count 1 -Quiet -ErrorAction SilentlyContinue) {
+            Write-Host "$targetHost is alive" -ForegroundColor Green
+            $liveHosts += $targetHost
         } else {
-            Write-Host "$host is not responding" -ForegroundColor DarkGray
+            Write-Host "$targetHost is not responding" -ForegroundColor DarkGray
         }
     }
 
@@ -63,20 +63,20 @@ function Invoke-Top1000PortScan {
     }
 
     $results = @()
-    foreach ($host in $liveHosts) {
-        Write-Host "`nScanning host: $host" -ForegroundColor Cyan
+    foreach ($targetHost in $liveHosts) {
+        Write-Host "`nScanning host: $targetHost" -ForegroundColor Cyan
         foreach ($port in $TopPorts) {
-            $scan = Test-NetConnection -ComputerName $host -Port $port -WarningAction SilentlyContinue
+            $scan = Test-NetConnection -ComputerName $targetHost -Port $port -WarningAction SilentlyContinue
             $obj = [PSCustomObject]@{
-                Host = $host
+                Host = $targetHost
                 Port = $port
                 Open = $scan.TcpTestSucceeded
             }
             $results += $obj
             if ($scan.TcpTestSucceeded) {
-                Write-Host "$host : $port OPEN" -ForegroundColor Green
+                Write-Host "$targetHost : $port OPEN" -ForegroundColor Green
             } else {
-                Write-Host "$host : $port closed" -ForegroundColor DarkGray
+                Write-Host "$targetHost : $port closed" -ForegroundColor DarkGray
             }
         }
     }
